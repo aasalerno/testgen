@@ -6,17 +6,21 @@ import dash_core_components as dcc
 app = dash.Dash(__name__)
 baseFile='/home/asalerno/testgen/unitFiles'
 
+topics=['t1','t2','t3']
+
+units={'Unit 1':topics,'Unit 2':topics,'Unit 3':topics}
 
 subjects=['Mathematics','Chemistry','Physics']
-courseMath = ['MPM1D','MFM1P','MPM1H','MPM2D','MFM2D','MCR3U','MCF3M','MBF3C','MEL3E','MHF4U','MCV4U','MDM4U','MCT4C','MAP4C','MEL4E']
-courseChem = ['SCH3U','SCH3C','SCH4U']
-coursePhys = ['SPH3U','SPH3C','SPH4U']
+#courseMath = ['MPM1D','MFM1P','MPM1H','MPM2D','MFM2D','MCR3U','MCF3M','MBF3C','MEL3E','MHF4U','MCV4U','MDM4U','MCT4C','MAP4C','MEL4E']
+courseMath = {'MCR3U':units,'MHF3U':units,'MCV4U':units}
+courseChem = {'SCH3U':units,'SCH3C':units,'SCH4U':units}
+coursePhys = {'SPH3U':units,'SPH3C':units,'SPH4U':units}
 
 subjList = [{'label':i, 'value':i} for i in subjects]
-mathList = [{'label':i, 'value':i} for i in courseMath]
-chemList = [{'label':i, 'value':i} for i in courseChem]
-physList = [{'label':i, 'value':i} for i in coursePhys]
-courseList = {'Mathematics':mathList,'Chemistry':chemList,'Physics':physList}
+#mathList = [{'label':i, 'value':i} for i in courseMath]
+#chemList = [{'label':i, 'value':i} for i in courseChem]
+#physList = [{'label':i, 'value':i} for i in coursePhys]
+courseList = {'Mathematics':courseMath,'Chemistry':courseChem,'Physics':coursePhys}
 
 app.layout = html.Div([
     html.Label('Subject'),
@@ -39,14 +43,10 @@ app.layout = html.Div([
     
     html.Hr(),
     
-    html.Label('Units'),
+    html.Label('Units'),    
+    dcc.Dropdown(id='units-checklist',multi=True)
     
-    html.Hr(),
-    html.Hr(),
-    
-    #dcc.Checklist(id='units-checklist'),
-    
-    html.Button('Submit', id='button')
+#    html.Button('Submit', id='button')
     
     ])
     
@@ -55,7 +55,7 @@ app.layout = html.Div([
     [dash.dependencies.Input('subject-dropdown','value')]
     )
 def set_courses_options(selected_subject):
-    return courseList[selected_subject]
+    return [{'label':i, 'value':i} for i in courseList[selected_subject].keys()]
 
 @app.callback(
     dash.dependencies.Output('courses-dropdown','value'),
@@ -63,6 +63,14 @@ def set_courses_options(selected_subject):
     )
 def set_courses_value(available_options):
     return available_options[0]['value']
+
+@app.callback(
+    dash.dependencies.Output('units-checklist','options'),
+    [dash.dependencies.Input('subject-dropdown','value'),
+    dash.dependencies.Input('courses-dropdown','value')]
+    )
+def set_units_options(selected_subject,selected_course):
+    return [{'label':i, 'value':i} for i in courseList[selected_subject][selected_course].keys()]
 
 #@app.callback(
     #dash.dependencies.Output('display-selected-values', 'children'),
