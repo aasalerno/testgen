@@ -2,6 +2,10 @@
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
+import csv
+import os
+
+#print(os.getcwd())
 
 app = dash.Dash(__name__)
 baseFile='/home/asalerno/testgen/unitFiles'
@@ -36,40 +40,56 @@ courseList = {'Mathematics':
                     'SCH3C':{},
                     'SCH4U':
                         {
-                                'Unit 1: Structure and Properties\n':
+                                'Unit 1: Structure and Properties':
                                 [
-                                     'Lesson 1 Atomic Theories',
-                                     'Lesson 2 Quantum Mechanics',
-                                     'Lesson 3 Chemical Bonding',
-                                     'Lesson 4 Intermolecular Forces',
+                                     'Atomic Theories',
+                                     'Quantum Mechanics',
+                                     'Chemical Bonding',
+                                     'Intermolecular Forces',
                                 ],
-                                'Unit 2: Organic Chemistry\n':
+                                'Unit 2: Organic Chemistry':
                                 [
-                                    'Lesson 5 Hydrocarbons',
-                                    'Lesson 6 Functional Groups',
-                                    'Lesson 7 Types of Organic Reactions',
-                                    'Lesson 8 Polymers',
+                                    'Hydrocarbons - Nomenclature',
+                                    'Hydrocarbons - Drawing',
+                                    'Functional Groups - Alkene/Alkyne - Nomenclature',
+                                    'Functional Groups - Alkene/Alkyne - Drawing',
+                                    'Functional Groups - Halides - Nomenclature',
+                                    'Functional Groups - Halides - Drawing',
+                                    'Functional Groups - Alcohols - Nomenclature',
+                                    'Functional Groups - Alcohols - Drawing',
+                                    'Functional Groups - Aldehydes/Ketones - Nomenclature',
+                                    'Functional Groups - Aldehydes/Ketones - Drawing',
+                                    'Functional Groups - Carboxylic Acids - Nomenclature',
+                                    'Functional Groups - Carboxylic Acids - Drawing',
+                                    'Functional Groups - Amines - Nomenclature',
+                                    'Functional Groups - Amines - Drawing',
+                                    'Functional Groups - Carboxylic Acids - Nomenclature',
+                                    'Functional Groups - Carboxylic Acids - Drawing',
+                                    'Isomers - Draw all the isomers for...',
+                                    'Organic Reactions - What will be produced?',
+                                    'Organic Reactions - How can we procude...',
+                                    'Polymers',
                                 ],
                                 'Unit 3: Rates of Reactions':
                                 [
-                                    'Lesson 9 Thermochemistry',
-                                    'Lesson 10 Enthalpies of Reactions',
-                                    'Lesson 11 Energy Options',
-                                    'Lesson 12 Chemical Kenetics',
+                                    'Thermochemistry',
+                                    'Enthalpies of Reactions',
+                                    'Energy Options',
+                                    'Chemical Kenetics',
                                 ],
                                 'Unit 4: Electrochemistry':
                                 [
-                                    'Lesson 13 Oxidation and Reduction Reactions',
-                                    'Lesson 14 The Activity Series of Metals',
-                                    'Lesson 15 Galvanic Cells',
-                                    'Lesson 16 Electrolytic Cells',
+                                    'Oxidation and Reduction Reactions',
+                                    'The Activity Series of Metals',
+                                    'Galvanic Cells',
+                                    'Electrolytic Cells',
                                 ],
                                 'Unit 5: Chemical Systems and Equilibrium':
                                 [
-                                    'Lesson 17 Introducing Equilibrium',
-                                    'Lesson 18 The Equilibrium Constant',
-                                    'Lesson 19 Acid and Bases Equilibrium',
-                                    'Lesson 20 Solubility Equilibriums',
+                                    'Introducing Equilibrium',
+                                    'The Equilibrium Constant',
+                                    'Acid and Bases Equilibrium',
+                                    'Solubility Equilibriums',
                                 ]
                         }
                                          
@@ -81,6 +101,7 @@ courseList = {'Mathematics':
                      'SPH4U':{}
                     }
         }
+
 app.layout = html.Div([
     
     html.Div([
@@ -109,13 +130,13 @@ app.layout = html.Div([
     
     #html.Div([
     #html.Label('Units'),    
-    #dcc.Checklist(id='units-checklist'),
+    #dcc.Checklist(id='units-radio'),
     #]),
     
     dcc.Markdown('''#### Units'''),    
-    dcc.Checklist(id='units-checklist',
+    dcc.RadioItems(id='units-radio',
         options=[],
-        values=[]
+        value=''
     ),
     html.Hr(),
     
@@ -126,32 +147,47 @@ app.layout = html.Div([
     ),
     
     html.Hr(),
-    dcc.Markdown('''#### Number of Marks'''),    
+    dcc.Markdown(children='''#### Number of Marks'''),    
     
     dcc.Markdown('''Knowledge (without MC) '''),    
-    dcc.Input(id='knowledge',value='0',type='integer'),
+    dcc.Input(id='knowledge',value=0,type='number',
+              style={'textarea':{
+                'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
     
     dcc.Markdown('''Thinking '''),    
-    dcc.Input(id='thinking',value='0',type='integer'),
+    dcc.Input(id='thinking',value=0,type='number',
+              style={'textarea':{
+                'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
     
     dcc.Markdown('''Communication '''),    
-    dcc.Input(id='communication',value='0',type='integer'),
+    dcc.Input(id='communication',value=0,type='number',
+              style={'textarea':{
+                'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
     
     dcc.Markdown('''Application '''),    
-    dcc.Input(id='application',value='0',type='integer'),
-        
-    dcc.Markdown('''
-#### Dash and Markdown
-
-Dash supports [Markdown](http://commonmark.org/help).
-
-Markdown is a simple way to write and format text.
-It includes a syntax for things like **bold text** and *italics*,
-[links](http://commonmark.org/help), inline `code` snippets, lists,
-quotes, and more.
-'''),
+    dcc.Input(id='application',value=0,type='number',
+              style={'textarea':{
+                'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
     
-    html.Button('Submit', id='button'),
+    html.Hr(),
+    
+    dcc.Markdown('''#### Number of versions '''),
+    dcc.Markdown('''Note that the versions will have different numbers for mathematical questions, or the questions in a jumbled order'''),
+    
+    dcc.Input(id='versions',value=1,type='number',
+              style={'textarea':{
+                'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
+    
+    #dcc.Markdown('''Now, we will generate the test!\
+		#Please be patient, and only click the button once.\
+		#This program is still in beta and may take a while to produce the test!\
+		#Thank you.
+		#'''),
+    html.Hr(),
+    html.Button('Generate Test', id='output-button',type='submit'),
+    dcc.Markdown(id='information',
+             children="Please enter your values, then click the button above to have the program make your test")
+    #dcc.Markdown(id='information')
     
     ])
     
@@ -173,7 +209,7 @@ def set_courses_value(available_options):
 
 
 @app.callback(
-    dash.dependencies.Output('units-checklist','options'),
+    dash.dependencies.Output('units-radio','options'),
     [dash.dependencies.Input('subject-dropdown','value'),
     dash.dependencies.Input('courses-dropdown','value')]
     )
@@ -186,16 +222,105 @@ def set_units_options(selected_subject,selected_course):
     dash.dependencies.Output('topics-checklist','options'),
     [dash.dependencies.Input('subject-dropdown','value'),
     dash.dependencies.Input('courses-dropdown','value'),
-    dash.dependencies.Input('units-checklist','values')]
+    dash.dependencies.Input('units-radio','value')]
     )
-def set_units_options(selected_subject,selected_course,selected_units):
+def set_units_options(selected_subject,selected_course,selected_unit):
     ret=[]
-    for i in range(len(selected_units)):
-        for j in range(len(courseList[selected_subject][selected_course][selected_units[i]])):
-            k = courseList[selected_subject][selected_course][selected_units[i]][j]
-            ret.append({'label':k, 'value':k})
+    if selected_unit in courseList[selected_subject][selected_course].keys():
+		for j in range(len(courseList[selected_subject][selected_course][selected_unit])):
+			k = courseList[selected_subject][selected_course][selected_unit][j]
+			ret.append({'label':k, 'value':k})
     return ret
+
+#@app.callback(
+    #dash.dependencies.Output('information', 'children'),
+    #[dash.dependencies.Input('output-button', 'n_clicks')],
+	#[dash.dependencies.State('versions','value')])
+#def set_display_value(n_clicks,versions):
+	#return "The input value was {} and the button has been clicked {} times".format(
+        #versions,
+        #n_clicks
+    #)
+
+@app.callback(
+    dash.dependencies.Output('information', 'children'),
+    [dash.dependencies.Input('output-button', 'n_clicks'),
+	dash.dependencies.Input('subject-dropdown','value'),
+    dash.dependencies.Input('courses-dropdown','value'),
+    dash.dependencies.Input('units-radio','value'),
+    dash.dependencies.Input('topics-checklist','values')],
+	[dash.dependencies.State('knowledge','value'),
+    dash.dependencies.State('thinking','value'),
+    dash.dependencies.State('communication','value'),
+    dash.dependencies.State('application','value'),
+    dash.dependencies.State('versions','value')])
+def write_output_file(n_clicks, subject, course, unit, topics, knowledge, thinking, communication, application, versions):
+	if n_clicks == 1:
+		csvfile = open('paramsfile.csv','wb')
+		paramwriter = csv.writer(csvfile, delimiter=",")
+		paramwriter.writerow(['Subject', subject])
+		paramwriter.writerow(['Course', course])
+		paramwriter.writerow(['Unit', unit])
+		topicsHold=[]
+		for i in topics:
+			if i in courseList[subject][course][unit]:
+				topicsHold.append(i)
+		paramwriter.writerow(['Topics', topicsHold])
+		paramwriter.writerow(['Knowledge', int(knowledge)])
+		paramwriter.writerow(['Thinking', int(thinking)])
+		paramwriter.writerow(['Communication', int(communication)])
+		paramwriter.writerow(['Application', int(application)])
+		paramwriter.writerow(['Versions', int(versions)])
+		csvfile.close()
+		return '''## Test layout 
+
+K: {} 
+
+T: {} 
+
+C: {} 
+
+A: {} 
+
+With {} version(s)'''.format(
+			int(knowledge),
+			int(thinking),
+			int(communication),
+			int(application),
+			int(versions)
+			)
+
+	elif n_clicks > 1:
+		reader = csv.reader(open('paramsfile.csv', 'r'))
+		d = {}
+		for row in reader:
+			k, v = row
+			d[k] = v
+		
+		return '''## Please only click the button once. Still generating original test.
+## Test layout 
+
+K: {} 
+
+T: {} 
+
+C: {} 
+
+A: {} 
+
+With {} version(s)'''.format(
+			d['Knowledge'],
+			d['Thinking'],
+			d['Communication'],
+			d['Application'],
+			d['Versions']
+			)
+	else:
+		return "Please enter your values, then click the button above to have the program make your test"
+
+
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()#debug=True)
+    #app.scripts.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})
