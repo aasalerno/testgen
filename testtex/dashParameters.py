@@ -8,7 +8,6 @@ import os
 #print(os.getcwd())
 
 app = dash.Dash(__name__)
-baseFile='/home/asalerno/testgen/unitFiles'
 
 courseList = {'Mathematics':
                   {
@@ -49,8 +48,8 @@ courseList = {'Mathematics':
                                 ],
                                 'Unit 2: Organic Chemistry':
                                 [
-                                    'Hydrocarbons - Nomenclature',
-                                    'Hydrocarbons - Drawing',
+                                    'Functional Groups - Alkane - Nomenclature',
+                                    'Functional Groups - Alkane - Drawing',
                                     'Functional Groups - Alkene/Alkyne - Nomenclature',
                                     'Functional Groups - Alkene/Alkyne - Drawing',
                                     'Functional Groups - Halides - Nomenclature',
@@ -177,6 +176,9 @@ app.layout = html.Div([
     dcc.Input(id='versions',value=1,type='number',
               style={'textarea':{
                 'min-height': '65px','padding-top':' 6px','padding-bottom': '6px' },'width': '5em'}),
+              
+    dcc.Input(id='teacher',value='Teacher Name'),
+    dcc.Input(id='title', value='Test Title'),
     
     #dcc.Markdown('''Now, we will generate the test!\
 		#Please be patient, and only click the button once.\
@@ -186,7 +188,7 @@ app.layout = html.Div([
     html.Hr(),
     html.Button('Generate Test', id='output-button',type='submit'),
     dcc.Markdown(id='information',
-             children="Please enter your values, then click the button above to have the program make your test")
+             children="Please enter your values, then click the button above to have the program make your test"),
     #dcc.Markdown(id='information')
     
     ])
@@ -253,8 +255,10 @@ def set_units_options(selected_subject,selected_course,selected_unit):
     dash.dependencies.State('thinking','value'),
     dash.dependencies.State('communication','value'),
     dash.dependencies.State('application','value'),
-    dash.dependencies.State('versions','value')])
-def write_output_file(n_clicks, subject, course, unit, topics, knowledge, thinking, communication, application, versions):
+    dash.dependencies.State('versions','value'),
+    dash.dependencies.State('teacher','value'),
+    dash.dependencies.State('title','value')])
+def write_output_file(n_clicks, subject, course, unit, topics, knowledge, thinking, communication, application, versions, teacher, title):
 	if n_clicks == 1:
 		csvfile = open('paramsfile.csv','wb')
 		paramwriter = csv.writer(csvfile, delimiter=",")
@@ -271,6 +275,8 @@ def write_output_file(n_clicks, subject, course, unit, topics, knowledge, thinki
 		paramwriter.writerow(['Communication', int(communication)])
 		paramwriter.writerow(['Application', int(application)])
 		paramwriter.writerow(['Versions', int(versions)])
+		paramwriter.writerow(['Teacher', teacher])
+		paramwriter.writerow(['Title', title])
 		csvfile.close()
 		return '''## Test layout 
 
@@ -321,6 +327,7 @@ With {} version(s)'''.format(
 
 
 
+#def run_applet():
 if __name__ == '__main__':
-    app.run_server()#debug=True)
+    app.run_server(debug=True)
     #app.scripts.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})

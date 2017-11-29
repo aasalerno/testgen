@@ -1,0 +1,10 @@
+setup.py
+TestTeX.egg-info/PKG-INFO
+TestTeX.egg-info/SOURCES.txt
+TestTeX.egg-info/dependency_links.txt
+TestTeX.egg-info/requires.txt
+TestTeX.egg-info/top_level.txt
+testtex/__init__.py
+testtex/dashParameters.py
+testtex/gentex.py
+testtex/subjectsDict.py
