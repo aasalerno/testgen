@@ -1,0 +1,19 @@
+functional group,suffix,name,terminal,tex
+carboxylic acid,oic acid,,True,([%i]=O)([%i]-OH)
+ester,oate,alkylcarboxy,True,
+amide,amide,amido,True,([%i]=O)([%i]-NH)
+nitrile,enitrile,cyano,False,
+aldehyde,al,oxo,True,([%i]=O)
+ketone,one,oxo,False,([%i]=O)
+ether,ether,oxy,False,
+alcohol,ol,hydroxy,False,([%i]-OH)
+thiol,ethiol,mercapto,False,
+amine,amine,amino,False,([%i]-N)
+alkyne,yne,yn,False,~
+alkene,ene,en,False,=
+alkane,ane,yl,False,-
+fluorine,fluoro,fluoro,False,([%i]-F)
+chlorine,chloro,chloro,False,([%i]-Cl)
+bromine,bromo,bromo,False,([%i]-Br)
+iodine,iodo,iodo,False,([%i]-I)
+
