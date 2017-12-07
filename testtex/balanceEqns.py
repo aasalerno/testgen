@@ -269,13 +269,15 @@ def genpreamble():
          '\\usepackage{enumerate}',
          '\\usepackage{grffile}',
          '\\usepackage[version=4]{mhchem}',
-         '\\definesubmol\\nobond{[,0.2,,,draw=none]}',
-         '\\begin{document}',
-         '\\begin{enumerate}']
+         '\\definesubmol\\nobond{[,0.2,,,draw=none]}'
+         ]
     return [''.join([a+'\n' for a in s])]
     
 # --------------------------------------------------------------------- #    
-    
+def genbegin():
+    s = ['\n\\begin{document}',
+     '\\begin{enumerate}']
+    return [''.join([a+'\n' for a in s])] 
 
 # parse the arguments
 parser = argparse.ArgumentParser()
@@ -291,9 +293,9 @@ redox = args.redox
 nqs = args.questions
 
 
-halfrxnsLatex=genpreamble()
-rxnsLatex=genpreamble()
-qsLatex=genpreamble()
+halfrxnsLatex=genpreamble()+['\\title{Half Reactions}']+genbegin()
+rxnsLatex=genpreamble()+['\\title{Full Reactions}']+genbegin()
+qsLatex=genpreamble()+['\\title{Questions}']+genbegin()
 
 
 
