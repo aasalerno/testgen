@@ -126,13 +126,19 @@ def redox_balancer(rd,pd,isbasic=False):
     elif overallCharge > 0:
         products['H+']= abs(overallCharge)
     
-    try:
-        if r1.composition[8] > p1.composition[8]:
-            products['H2O'] = r1.composition[8] - p1.composition[8]
-        elif r1.composition[8] < p1.composition[8]:
-            reactants['H2O'] = p1.composition[8] - r1.composition[8]
-    except KeyError:
-        pass
+    if 8 in r1.composition.keys():
+        r1Oc = r1.composition[8]
+    else:
+        r1Oc = 0
+    if 8 in p1.composition.keys():
+        p1Oc = p1.composition[8]
+    else:
+        p1Oc = 0
+    if r1Oc > p1Oc:
+        products['H2O'] = r1Oc - p1Oc
+    elif r1Oc < p1Oc:
+        reactants['H2O'] = p1Oc - r1Oc
+
     if isbasic:
         if 'H+' in reactants.keys():
             if 'H2O' in reactants.keys():
@@ -344,6 +350,7 @@ if nqs:
             # now we apply the coefficients and pop out the e-
             halfrxnsStr=[]
             rxnsStr=[]
+            fullrxns=[{},{}]
             for i in range(len(rxns)):
                 # First ensure that we write out the half rxns, then the full
                 for j in range(len(rxns[i])):
@@ -352,12 +359,17 @@ if nqs:
                         rxns[i][j][k] = rxns[i][j][k]*coeffs[i]
                     rxns[i][j].pop('e-',None)
                 halfrxnsStr.append(halfrxns[i])
-                rxnsStr.append(rxns[i])
-        
-        
+            
+            for i in range(len(rxns)):
+                for j in range(len(rxns[i])):
+                    for k in rxns[i][j].keys():
+                        fullrxns[j][k]=rxns[i][j][k] 
+                            
+            rxnsLatex.append(chemical_equation_latex(fullrxns,atype))
+                
             for i in range(len(halfrxnsStr)):
                 halfrxnsLatex.append(chemical_equation_latex(halfrxnsStr[i],atype))
-                rxnsLatex.append(chemical_equation_latex(rxnsStr[i],atype))
+                #rxnsLatex.append(chemical_equation_latex(rxnsStr[i],atype))
                 
             halfrxnsLatex=['\n\n'.join(halfrxnsLatex)]
             rxnsLatex=['\n\n'.join(rxnsLatex)]
