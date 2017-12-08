@@ -66,7 +66,7 @@ redoxTable=[[{'F2':1},{'F-':2}],
             [{'Cu+':1},{'Cu':1}],
             [{'Cu+2':1},{'Cu':1}],
             [{'Sn+4':1},{'Sn+2':1}],
-            [{'H+':2},{'H2':1}],
+            #[{'H+':2},{'H2':1}],
             [{'Fe+3':1},{'Fe':1}],
             [{'Pb+2':1},{'Pb':1}],
             [{'Sn+2':1},{'Sn':1}],
@@ -74,7 +74,7 @@ redoxTable=[[{'F2':1},{'F-':2}],
             [{'V+4':1},{'V+2':1}],
             [{'Co+2':1},{'Co':1}],
             [{'Cd+2':1},{'Cd':1}],
-            [{'Se':1},{'H2Se':1}],
+            #[{'Se':1},{'H2Se':1}],
             [{'Cr+3':1},{'Cr+2':1}],
             [{'Fe+2':1},{'Fe':1}],
             [{'Cr+3':1},{'Cr':1}],
@@ -103,10 +103,10 @@ def lcf(vals):
 def apply_lcf(vals):
     vals=abs(vals)
     if max(vals)%min(vals) == 0:
-        l = min(vals)
+        l = max(vals)
     else:
         l = lcf(vals)
-    return np.array([abs(val)/l for val in vals])
+    return np.array([l/abs(val) for val in vals])
 
 def redox_balancer(rd,pd,isbasic=False):
     e=rd[1]-pd[1]
@@ -348,7 +348,7 @@ if nqs:
                 coeffs=chempy.Equilibrium.eliminate([e1,e2],'e-')
             except TypeError:
                 coeffs=[1,1]
-            coeffs=apply_lcf(np.array(coeffs,int))
+            coeffs=apply_lcf(abs(np.array(coeffs,int)))
             # now we apply the coefficients and pop out the e-
             halfrxnsStr=[]
             rxnsStr=[]
@@ -366,7 +366,11 @@ if nqs:
                 for j in range(len(rxns[i])):
                     for k in rxns[i][j].keys():
                         fullrxns[j][k]=rxns[i][j][k] 
-                            
+            
+            for key in fullrxns[0].keys():
+                if key in fullrxns[1].keys():
+                    fullrxns[0].pop(key,None)
+                    fullrxns[1].pop(key,None)                
             rxnsLatex.append(chemical_equation_latex(fullrxns,atype))
                 
             for i in range(len(halfrxnsStr)):
