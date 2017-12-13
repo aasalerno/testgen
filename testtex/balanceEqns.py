@@ -16,82 +16,6 @@ Of course... The generator is encountering issues.
 '''
 program_name = 'balanceEqns.py'
 
-ostates = np.zeros(200,int)
-ostates[0] = -1
-ostates[1] = 1
-#ostates[3] = 1
-#ostates[11] = 1
-##ostates[19] = 1
-##ostates[37] = 1
-#ostates[4] = 2
-#ostates[12] = 2
-##ostates[20] = 2
-##ostates[38] = 2
-#ostates[5] = 3
-#ostates[13] = 3
-#ostates[31] = 3
-ostates[7] = -3
-ostates[15] = -3
-#ostates[33] = -3
-ostates[51] = -3
-ostates[8] = -2
-#ostates[16] = -2
-#ostates[34] = -2
-ostates[52] = -2
-ostates[9] = -1
-ostates[17] = -1
-ostates[35] = -1
-ostates[53] = -1
-ostates0 = np.where(ostates==0)[0]
-
-
-# Table of half equations, always adding electrons
-redoxTable=[[{'F2':1},{'F-':2}],
-            [{'S2O8-2':1},{'SO4-2':2}],
-            [{'Co+3':1},{'Co+2':1}],
-            #[{'H2O2':1},{'H2O':2}],
-            [{'Au+':1},{'Au':1}],
-            [{'Ce+4':1},{'Ce+3':1}],
-            [{'MnO4-':1},{'Mn+2':1}],
-            [{'Au+3':1},{'Au':1}],
-            [{'Cl2':1},{'Cl-':2}],
-            [{'Cr2O7-2':1},{'Cr+3':2}],
-            #[{'O2':1},{'H2O':2}],
-            [{'Br2':1},{'Br-':2}],
-            [{'Hg+2':1},{'Hg':1}],
-            [{'Fe+3':1},{'Fe+2':1}],
-            #[{'O2':1},{'H2O2':1}],
-            [{'MnO4-1':1},{'MnO2':1}],
-            [{'I2':1},{'I-':2}],
-            [{'Cu+':1},{'Cu':1}],
-            [{'Cu+2':1},{'Cu':1}],
-            [{'Sn+4':1},{'Sn+2':1}],
-            #[{'H+':2},{'H2':1}],
-            [{'Fe+3':1},{'Fe':1}],
-            [{'Pb+2':1},{'Pb':1}],
-            [{'Sn+2':1},{'Sn':1}],
-            [{'Ni+2':1},{'Ni':1}],
-            [{'V+4':1},{'V+2':1}],
-            [{'Co+2':1},{'Co':1}],
-            [{'Cd+2':1},{'Cd':1}],
-            #[{'Se':1},{'H2Se':1}],
-            [{'Cr+3':1},{'Cr+2':1}],
-            [{'Fe+2':1},{'Fe':1}],
-            [{'Cr+3':1},{'Cr':1}],
-            [{'Zn+2':1},{'Zn':1}],
-            [{'Mn+2':1},{'Mn':1}],
-            [{'V+2':1},{'V':1}],
-            [{'Al+3':1},{'Al':1}],
-            [{'Ti+2':1},{'Ti':1}],
-            [{'Mg+2':1},{'Mg':1}],
-            [{'Na+':1},{'Na':1}],
-            [{'Ca+2':1},{'Ca':1}],
-            [{'Ba+2':1},{'Ba':1}],
-            [{'K+':1},{'K':1}],
-            [{'Li+':1},{'Li':1}]]
-                
-
-
 def lcf(vals):
     vals=abs(vals)
     v1=min(vals)
@@ -108,23 +32,23 @@ def apply_lcf(vals):
         l = lcf(vals)
     return np.array([l/abs(val) for val in vals])
 
-def redox_balancer(rd,pd,isbasic=False):
-    e=rd[1]-pd[1]
+def redox_balancer(rd,pd,eqnDict,isbasic=False):
     r1=chempy.Substance.from_formula(rd[0])
     p1=chempy.Substance.from_formula(pd[0])
+    r1ck = [i for i in r1.composition.keys() if i not in [0,1,8]]
+    p1ck = [i for i in p1.composition.keys() if i not in [0,1,8]]
+    e = rd[1]*r1.composition[r1ck[0]]*eqnDict[0][rd[0]] - pd[1]*p1.composition[p1ck[0]]*eqnDict[1][pd[0]]
     reactants={}
     products={}
-    reactants[rd[0]]=1
-    products[pd[0]]=1
-    overallCharge = r1.charge-p1.charge-e
+    reactants[rd[0]]=eqnDict[0][rd[0]]
+    products[pd[0]]=eqnDict[1][pd[0]]
+    overallCharge = r1.charge*eqnDict[0][rd[0]] - p1.charge*eqnDict[1][pd[0]]
     if e > 0: # Add electrons to reactants
-        reactants['e-']=abs(e)
+        reactants['e-']=int(abs(e)*float(r1.composition[r1ck[0]])/float(p1.composition[p1ck[0]]))
     if e < 0: # Add electrons to products
-        products['e-']=abs(e)
-    if overallCharge < 0:
-        reactants['H+']= abs(overallCharge)
-    elif overallCharge > 0:
-        products['H+']= abs(overallCharge)
+        products['e-']=int(abs(e)*float(r1.composition[p1ck[0]])/float(p1.composition[r1ck[0]]))
+        
+    
     
     if 8 in r1.composition.keys():
         r1Oc = r1.composition[8]
@@ -136,9 +60,10 @@ def redox_balancer(rd,pd,isbasic=False):
         p1Oc = 0
     if r1Oc > p1Oc:
         products['H2O'] = r1Oc - p1Oc
+        reactants['H+'] = 2*(r1Oc - p1Oc)
     elif r1Oc < p1Oc:
         reactants['H2O'] = p1Oc - r1Oc
-
+        products['H+'] = 2*(p1Oc - r1Oc)
     if isbasic:
         if 'H+' in reactants.keys():
             if 'H2O' in reactants.keys():
@@ -165,7 +90,7 @@ def redox_balancer(rd,pd,isbasic=False):
     return [reactants, products]
         
 
-def get_oxidation_state(r,p):
+def get_oxidation_state(r,p,eqnDict):
     rd = {}
     pd = {}
     rxns = []
@@ -188,7 +113,7 @@ def get_oxidation_state(r,p):
             ox = -sum([chem.composition[i]*ostates[i] for i in chem.composition.keys()])
             chemical = np.intersect1d(ostates0,np.array(chem.composition.keys()))[0]
         if chemical:
-            rd[str(pt.elements[chemical])] = [chem.name,ox]
+            rd[str(pt.elements[chemical])] = [chem.name,ox/chem.composition[chemical]]
     for chem in p:
         chem=chempy.Substance.from_formula(chem)
         # oxidation state!
@@ -202,12 +127,12 @@ def get_oxidation_state(r,p):
             ox = -sum([chem.composition[i]*ostates[i] for i in chem.composition.keys()])
             chemical = np.intersect1d(ostates0,np.array(chem.composition.keys()))[0]
         if chemical:
-            pd[str(pt.elements[chemical])] = [chem.name,ox]
+            pd[str(pt.elements[chemical])] = [chem.name,ox/chem.composition[chemical]]
     rk = rd.keys()
     pk = pd.keys()
     elems = [val for val in rk if val in pk]
     for el in elems:
-        rxns.append(redox_balancer(rd[el],pd[el]))        
+        rxns.append(redox_balancer(rd[el],pd[el],eqnDict))        
     return rxns
 
 
@@ -270,13 +195,19 @@ def genpreamble():
          '\\usepackage{grffile}',
          '\\usepackage[version=4]{mhchem}',
          '\\definesubmol\\nobond{[,0.2,,,draw=none]}'
+         '\\usepackage{fancyhdr}',
+         '\\pagestyle{fancy}',
+         '\\rhead{Ms. De Luca - SCH4U - LOTS of Redox Practice}'
          ]
     return [''.join([a+'\n' for a in s])]
     
 # --------------------------------------------------------------------- #    
 def genbegin():
     s = ['\n\\begin{document}',
-     '\\begin{enumerate}']
+         '\n\\begin{center}',
+         '\n\\Large{\\textbf{Redox Practice!}}',
+         '\n\\end{center}',
+         '\\begin{enumerate}']
     return [''.join([a+'\n' for a in s])] 
 
 # parse the arguments
@@ -301,8 +232,10 @@ qsLatex=genpreamble()+['\\title{Questions}']+genbegin()
 
 if nqs:
     eqns=[]
+    eqnsDict=[]
     rtlen = len(redoxTable)
     for nq in range(nqs):
+        cnt=0
         same=True
         while same:
             locs = np.random.randint(0,rtlen,size=2)
@@ -312,12 +245,32 @@ if nqs:
             p1 = redoxTable[locs[0]][1].keys()[0] 
             p2 = redoxTable[locs[1]][0].keys()[0]
             if not any([r1==p1,r1==r2,r1==p1,r1==p2,r2==p1,r2==p2,p1==p2]):
-                same=False
-        eqns.append(r1 + ' + ' + r2 + ' -> ' + p1 + ' + ' + p2)
-   
+                eqn=r1 + ' + ' + r2 + ' -> ' + p1 + ' + ' + p2
+                r,p = [s.split(' + ') for s in eqn.split('->')]
+                eqnDict=[{r1:redoxTable[locs[0]][0][r1],r2:redoxTable[locs[1]][1][r2]},{p1:redoxTable[locs[0]][1][p1],
+                                                                                        p2:redoxTable[locs[1]][0][p2]}]
+                for i in range(len(r)):
+                    r[i]=''.join(r[i].split(' '))
+                for i in range(len(p)):
+                    p[i]=''.join(p[i].split(' '))
+                rxns = get_oxidation_state(r,p,eqnDict)
+                if len(rxns)>1:
+                    same=False
+                    if eqn in eqns:
+                        same=True
+                        cnt+=1
+                        if cnt>1000:
+                            print('Setting nqs to ' + str(nq))
+                            break
+        if cnt<1000:     
+            eqns.append(r1 + ' + ' + r2 + ' -> ' + p1 + ' + ' + p2)
+            eqnsDict.append([{r1:redoxTable[locs[0]][0][r1],r2:redoxTable[locs[1]][1][r2]},{p1:redoxTable[locs[0]][1][p1],
+                                                                                        p2:redoxTable[locs[1]][0][p2]}])
+        else:
+            break
     redox=True
    
-    for eqn in eqns:
+    for en,eqn in enumerate(eqns):
         #eqn=''.join(eqn.split(' '))
         if len(eqn.split('<->')) == 1:
             atype='->'
@@ -337,18 +290,21 @@ if nqs:
                 r[i]=''.join(r[i].split(' '))
             for i in range(len(p)):
                 p[i]=''.join(p[i].split(' '))
- 
-            rxns = get_oxidation_state(r,p)
+            
+            
+            rxns = get_oxidation_state(r,p,eqnsDict[en])
             halfrxns = deepcopy(rxns)
             K1, K2, Kw = symbols('K1 K2 Kw')
-            print(rxns)
             e1=chempy.Equilibrium(rxns[0][0],rxns[0][1],K1)
             e2=chempy.Equilibrium(rxns[1][0],rxns[1][1],K2)
             try:
                 coeffs=chempy.Equilibrium.eliminate([e1,e2],'e-')
             except TypeError:
                 coeffs=[1,1]
-            coeffs=apply_lcf(abs(np.array(coeffs,int)))
+            coeffs=abs(np.array(coeffs,int))
+            if max(coeffs)%min(coeffs)==0:
+                coeffs=coeffs/min(coeffs)
+           
             # now we apply the coefficients and pop out the e-
             halfrxnsStr=[]
             rxnsStr=[]
@@ -369,19 +325,29 @@ if nqs:
             
             for key in fullrxns[0].keys():
                 if key in fullrxns[1].keys():
-                    fullrxns[0].pop(key,None)
-                    fullrxns[1].pop(key,None)                
+                    rhld=fullrxns[0][key]
+                    phld=fullrxns[1][key]
+                    if rhld>phld:
+                        fullrxns[0][key]=rhld-phld
+                        fullrxns[1].pop(key,None)
+                    elif rhld<phld:
+                        fullrxns[1][key]=rhld-phld
+                        fullrxns[0].pop(key,None)
+                    elif rhld==phld:
+                        fullrxns[0].pop(key,None)
+                        fullrxns[1].pop(key,None)
             rxnsLatex.append(chemical_equation_latex(fullrxns,atype))
+            #print(chemical_equation_string(fullrxns,atype))
                 
             for i in range(len(halfrxnsStr)):
                 halfrxnsLatex.append(chemical_equation_latex(halfrxnsStr[i],atype))
                 #rxnsLatex.append(chemical_equation_latex(rxnsStr[i],atype))
                 
-            halfrxnsLatex=['\n\n'.join(halfrxnsLatex)]
-            rxnsLatex=['\n\n'.join(rxnsLatex)]
-        qsLatex.append('\n\n')
-        halfrxnsLatex.append('\n\n')
-        rxnsLatex.append('\n\n')
+            halfrxnsLatex=['\n'.join(halfrxnsLatex)]
+            rxnsLatex=['\n'.join(rxnsLatex)]
+        qsLatex.append('\n')
+        halfrxnsLatex.append('\n')
+        rxnsLatex.append('\n')
     
     
 else:
